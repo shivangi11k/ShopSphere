@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'product_scanner_screen.dart';
 import 'ar_shopping_screen.dart';
 import 'recommendations_screen.dart';
-import 'voice_assistant_screen.dart';
+import '../voice_shopping_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -86,7 +86,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  _fadeRoute(const VoiceAssistantScreen()),
+                  _fadeRoute(const VoiceShoppingScreen()),
                 );
               },
               child: Text(

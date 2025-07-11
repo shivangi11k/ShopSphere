@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'auth/login_screen.dart'; 
 
-void main() {
-  runApp(const ShopSphereApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+
+  runApp(const MyApp());
 }
 
-class ShopSphereApp extends StatelessWidget {
-  const ShopSphereApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ShopSphere',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
-      home: const HomeScreen(),
-      debugShowCheckedModeBanner: false,
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,  
+      home: LoginScreen(),                
     );
   }
 }
