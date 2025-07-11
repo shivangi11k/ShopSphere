@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShopSphere Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .section {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    p {
+      color: #555;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛍️ ShopSphere Dashboard</h1>
+
+  <!-- 📦 Add to Cart -->
+  <div class="section">
+    <h2>➕ Add Product to Cart</h2>
+    <input type="text" id="userId" placeholder="Enter User ID" />
+    <input type="text" id="productName" placeholder="Enter Product Name" />
+    <button onclick="addToCart()">Add to Cart</button>
+    <p id="cartStatus"></p>
+  </div>
+
+  <!-- 🧠 Get Recommendations -->
+  <div class="section">
+    <h2>🧠 Get Product Recommendations</h2>
+    <input type="text" id="recUserId" placeholder="Enter User ID" />
+    <input type="text" id="recProductId" placeholder="Enter Product ID" />
+    <button onclick="getRecommendations()">Get Recommendations</button>
+    <p id="recOutput"></p>
+  </div>
+
+  <!-- 📦 Inventory Check -->
+  <div class="section">
+    <h2>📦 Check Inventory</h2>
+    <input type="text" id="inventoryProductId" placeholder="Enter Product ID" />
+    <button onclick="getInventory()">Check Inventory</button>
+    <p id="inventoryOutput"></p>
+  </div>
+
+  <!-- 📷 Product Recognition (AR Simulation) -->
+  <div class="section">
+    <h2>🤖 Product Recognition (AR Simulation)</h2>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="recognizeImage()">Detect Product</button>
+    <p id="recognitionOutput"></p>
+  </div>
+
+  <!-- 🔗 JavaScript -->
+  <script>
+    async function addToCart() {
+      const userId = document.getElementById('userId').value;
+      const product = document.getElementById('productName').value;
+
+      const res = await fetch('http://localhost:3001/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, product })
+      });
+      const data = await res.json();
+      document.getElementById('cartStatus').textContent = data.message || data.error;
+    }
+
+    async function getRecommendations() {
+      const userId = document.getElementById('recUserId').value;
+      const productId = document.getElementById('recProductId').value;
+
+      const res = await fetch('http://localhost:3001/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId })
+      });
+      const data = await res.json();
+      document.getElementById('recOutput').textContent =
+        data.recommendations ? data.recommendations.join(', ') : data.error;
+    }
+
+    async function getInventory() {
+      const productId = document.getElementById('inventoryProductId').value;
+
+      const res = await fetch(`http://localhost:3001/api/inventory/${encodeURIComponent(productId)}`);
+      const data = await res.json();
+      document.getElementById('inventoryOutput').textContent =
+        `Price: ₹${data.price}, Available: ${data.available}, Offer: ${data.offer || 'None'}`;
+    }
+
+    async function recognizeImage() {
+      const fileInput = document.getElementById('imageInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select an image!');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(',')[1];
+
+        // Step 1: Recognize Product
+        const res = await fetch('http://localhost:3001/api/recognize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64 })
+        });
+
+        const data = await res.json();
+        const productId = data.productId;
+        const userId = document.getElementById('recUserId').value || "demoUser";
+
+        document.getElementById('recognitionOutput').textContent =
+          productId ? `🧠 Detected Product: ${productId}` : data.error;
+
+        // Step 2: Auto-fetch Recommendations
+        const recRes = await fetch('http://localhost:3001/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, productId })
+        });
+        const recData = await recRes.json();
+        document.getElementById('recOutput').textContent =
+          `🎯 Recommendations: ${recData.recommendations?.join(', ') || recData.error}`;
+
+        // Step 3: Auto-fetch Inventory
+        const invRes = await fetch(`http://localhost:3001/api/inventory/${encodeURIComponent(productId)}`);
+        const invData = await invRes.json();
+        document.getElementById('inventoryOutput').textContent =
+          `💰 Price: ₹${invData.price}, 🛒 Available: ${invData.available}, 🎁 Offer: ${invData.offer || 'None'}`;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+
+</body>
+</html>
