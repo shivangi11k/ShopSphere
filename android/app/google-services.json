@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "24538868931",
+    "firebase_url": "https://shopsphere-18cea-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "shopsphere-18cea",
+    "storage_bucket": "shopsphere-18cea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24538868931:android:b1db2a9162bfb0c7310676",
+        "android_client_info": {
+          "package_name": "com.example.shopsphere"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa1BhCTsE5NG8_6s0rFz-naYaNWHEkrIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

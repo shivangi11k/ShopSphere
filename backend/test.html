@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShopSphere API Tester</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f2f2f2;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .wrapper {
+      width: 100%;
+      max-width: 600px;
+    }
+    .box {
+      background: #fff;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 15px;
+      margin-bottom: 10px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    p {
+      font-size: 14px;
+      color: #333;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="box">
+      <h2>🩺 Set User Allergy List</h2>
+      <input type="text" id="allergyUser" placeholder="User ID (e.g. demo-user)">
+      <input type="text" id="allergyList" placeholder="Allergies (comma-separated)">
+      <button onclick="updateAllergies()">Save Allergies</button>
+      <p id="allergySaveStatus"></p>
+    </div>
+
+    <div class="box">
+      <h2>⚠️ Allergy Check</h2>
+      <input type="text" id="checkUser" placeholder="User ID">
+      <input type="text" id="ingredients" placeholder="Product Ingredients (comma-separated)">
+      <button onclick="checkAllergy()">Check</button>
+      <p id="allergyCheckStatus"></p>
+    </div>
+
+    <div class="box">
+      <h2>🛒 Checkout Cart</h2>
+      <input type="text" id="checkoutUser" placeholder="User ID">
+      <button onclick="checkout()">Checkout</button>
+      <p id="checkoutStatus"></p>
+    </div>
+
+  </div>
+
+console.log("✅ Script loaded");
+
+
+  <script>
+async function updateAllergies() {
+  console.log("🚨 updateAllergies() called");
+
+  const userId = document.getElementById('allergyUser').value;
+  const raw = document.getElementById('allergyList').value;
+  const allergies = raw.split(',').map(a => a.trim().toLowerCase());
+
+  console.log("📤 Sending:", { userId, allergies });
+
+  try {
+    const res = await fetch('http://localhost:3001/api/user/allergies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, allergies })
+    });
+
+    const data = await res.json();
+    console.log("✅ Server responded:", data);
+    document.getElementById('allergySaveStatus').innerText = data.message || data.error;
+  } catch (err) {
+    console.error("❌ Fetch error:", err);
+  }
+}
+
+    async function checkAllergy() {
+      console.log("🚀 checkAllergy called");
+
+      const userId = document.getElementById('checkUser').value;
+      const raw = document.getElementById('ingredients').value;
+      const ingredients = raw.split(',').map(i => i.trim().toLowerCase());
+
+      try {
+        const res = await fetch('http://localhost:3001/api/allergy-check', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ userId, product: { ingredients } })
+        });
+
+        const data = await res.json();
+        console.log("✅ Allergy Check Response:", data);
+        document.getElementById('allergyCheckStatus').innerText =
+          data.alert ? "⚠️ Allergy Alert!" : "✅ No known allergens.";
+      } catch (err) {
+        console.error("❌ Allergy fetch error:", err);
+      }
+    }
+
+    async function checkout() {
+      console.log("🚀 checkout called");
+
+      const userId = document.getElementById('checkoutUser').value;
+
+      try {
+        const res = await fetch('http://localhost:3001/api/checkout', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ userId })
+        });
+
+        const data = await res.json();
+        console.log("✅ Checkout response:", data);
+        document.getElementById('checkoutStatus').innerText = data.message || data.error;
+      } catch (err) {
+        console.error("❌ Checkout fetch error:", err);
+      }
+    }
+  </script>
+</body>
+</html>
