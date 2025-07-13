@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -9,21 +12,48 @@ class RecommendationsScreen extends StatefulWidget {
 
 class _RecommendationsScreenState extends State<RecommendationsScreen> {
   List<String> recommendations = [];
+  bool isLoading = false;
 
-  void fetchRecommendations() {
+  Future<void> fetchRecommendations() async {
     setState(() {
+      isLoading = true;
       recommendations = [];
     });
 
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final String jsonString =
+          await rootBundle.loadString('assets/recommendations.json');
+      final Map<String, dynamic> data = json.decode(jsonString);
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        setState(() {
+          recommendations = ['Please log in to get personalized recommendations.'];
+          isLoading = false;
+        });
+        return;
+      }
+
+      final List<dynamic>? userRecs = data[user.uid];
+      if (userRecs != null) {
+        setState(() {
+          recommendations = userRecs.cast<String>();
+        });
+      } else {
+        setState(() {
+          recommendations = ['No recommendations available for your account.'];
+        });
+      }
+    } catch (e) {
       setState(() {
-        recommendations = [
-          'Recommended: Organic Almond Milk',
-          'Recommended: Wireless Earbuds',
-          'Recommended: Cozy Sweatshirt',
-        ];
+        recommendations = ['Error loading recommendations.'];
       });
-    });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -70,15 +100,18 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            ...recommendations.map(
-              (rec) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Text(
-                  rec,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            if (isLoading)
+              const CircularProgressIndicator()
+            else
+              ...recommendations.map(
+                (rec) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Text(
+                    rec,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
