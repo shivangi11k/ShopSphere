@@ -2,6 +2,12 @@
 
 A new Flutter project.
 
+## 🎥 Demo Video
+
+Check out the full app walkthrough in this demo video:
+
+👉 [Watch the Demo on YouTube](https://youtu.be/dMRQdAAJAqo)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
